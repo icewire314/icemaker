@@ -1,0 +1,37 @@
+Icemaker changes to be made
+
+- Invisible refdes in LTSpice are still drawn in SVG
+
+- add font choice for text in SVG for ltspice2svg
+
+- Let .ASC work as well as .asc in website
+
+- 3 ways to enter parameter
+   1) List of parameters
+       \runParam{V_1 = [2, 3, 4, 5]}
+       or
+       \runParam{V_1 = [2 3 4 5]}
+   
+   2) default with global %variation and # of parameters
+       \runParamSetup{20:4} // %variation;# of parameters done once or more
+       \runParam{V_1 = 2}
+
+   3) Min, max, stepsize
+       \runParam{V_1 = 2:5:1} // min;max;stepsize
+ 
+- add tand, sind, cosd, asind, acosd so all work in degrees
+
+- check that atan() and tan() print out brackets correctly
+
+- all errors should be put in comments at top of .tex file
+  (variable not found, etc)
+
+- beta sometimes does not work as a variable with latex symbol \beta but beta1 
+  and \beta_1 does work
+
+- add more choices for \val{}
+   \valLtx{} prints out latex variable 
+   \valN{} prints out number in regular format (0.00005637)
+   \valNeng{} prints out number in eng notation
+   \valNsci{} prints out number in sci notation
+

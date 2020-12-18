@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	
+<svg
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:cc="http://creativecommons.org/ns#"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+	xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+width = "1760" height = "1216"
+	viewBox="-416 -128 1760 1216"
+	version="1.1"
+	id="svg8"
+	inkscape:version="0.92.2 5c3e80d, 2017-08-06"
+	sodipodi:docname="test.svg">
+	<defs
+		id="defs9" />
+	<sodipodi:namedview
+		 id="base"
+		 pagecolor="#ffffff"
+		 bordercolor="#666666"
+		 borderopacity="1.0"
+		 inkscape:pageopacity="0.0"
+		 inkscape:pageshadow="2"
+		 inkscape:zoom="1.0"
+		 inkscape:cx="1024"
+		 inkscape:cy="1024"
+		 inkscape:document-units="px"
+		 inkscape:current-layer="layer1"
+		 showgrid="true"
+		 inkscape:window-width="1024"
+		 inkscape:window-height="1024"
+		 inkscape:window-x="1024"
+		 inkscape:window-y="1024"
+		 inkscape:window-maximized="0"
+		 showguides="true"
+		 units="px"
+		 fit-margin-top="0"
+		 fit-margin-left="0"
+		 fit-margin-right="0"
+		 fit-margin-bottom="0"
+		 inkscape:snap-to-guides="false"
+		 inkscape:snap-grids="true"
+		 inkscape:snap-nodes="false"
+		 inkscape:object-nodes="true"
+		 inkscape:object-paths="false"
+		 inkscape:snap-bbox="true"
+		 inkscape:snap-bbox-midpoints="false"
+		 inkscape:bbox-nodes="true">
+	
+		<inkscape:grid
+		   type="xygrid"
+		   id="grid815"
+		   spacingx="16"
+		   spacingy="16"
+		   empspacing="1"
+		   dotted="true"
+		   units="px"
+		   originx="0"
+		   originy="0"
+		   enabled="true" />
+	  </sodipodi:namedview>
+	  <metadata
+		 id="metadata5">
+		<rdf:RDF>
+		  <cc:Work
+			 rdf:about="">
+			<dc:format>image/svg+xml</dc:format>
+			<dc:type
+			   rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+			<dc:title />
+		  </cc:Work>
+		</rdf:RDF>
+	  </metadata>
+	
+<defs>
+	<g id="svg/svg_supply">
+      <polygon points="-6,0 0,-15 6,0" style="fill:black;fill-opacity:1;stroke:black;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+     <rect x="-16" y="-16" width="32" height="32" style="fill:none;stroke:none" />
+     </g>
+</defs>
+<defs>
+    <g id="svg/svg_port">
+      <circle cx="0" cy="0" r="6" style="stroke:black; fill:black"/>
+      <circle cx="0" cy="0" r="3" style="stroke:white; fill:white"/>
+     <rect x="-16" y="-16" width="32" height="32" style="fill:none;stroke:none" />
+     </g>
+</defs>
+<defs>
+    <g id="svg/svg_dot">
+      <circle cx="0" cy="0" r="5" style="stroke:#000000; fill:#000000"/>
+     <rect x="-16" y="-16" width="32" height="32" style="fill:none;stroke:none" />
+     </g>
+</defs>
+<defs>
+     <g id="svg/svg_gnd">
+      <path 
+     d="M 0,0 0,8
+     M -14,8 14,8
+     M -8,14 8,14
+     M -2,20 2,20"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     />
+     <rect x="-16" y="-16" width="48" height="48" style="fill:none;stroke:none" />
+     </g>
+</defs>
+				<g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
+<polyline points="288 48 160 48" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="384 48 288 48" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-160 64 -272 64" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-64 64 -160 64" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="816 64 704 64" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="48 112 48 0" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="208 112 48 112" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-160 176 -160 64" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="400 176 272 176" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="688 176 560 176" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="48 256 48 112" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="272 320 272 176" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="688 320 688 176" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-160 336 -160 208" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-160 336 -304 336" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-16 336 -160 336" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="816 336 816 288" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="816 400 816 336" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="880 400 816 400" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="944 400 880 400" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="112 464 112 352" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="432 464 432 320" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="544 464 544 320" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="816 512 816 400" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-160 544 -160 432" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-160 544 -320 544" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-16 544 -160 544" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="112 560 112 464" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="272 624 272 512" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="416 624 272 624" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="688 624 688 512" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="688 624 608 624" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<polyline points="-160 688 -160 544" style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+<use xlink:href="#svg/svg_dot" x="-160" y="544" transform = "rotate(0 -160 544)" />
+<text x="-152" y="536" style="white-space:pre;dominant-baseline:baseline;text-anchor:start;font-size:20px;">test24</text>
+<text x="40" y="112" style="white-space:pre;dominant-baseline:middle;text-anchor:end;font-size:20px;">test20</text>
+<text x="-160" y="56" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test22</text>
+<text x="-160" y="344" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">test23</text>
+<text x="112" y="344" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test17</text>
+<text x="112" y="568" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">test19</text>
+<text x="120" y="464" style="white-space:pre;dominant-baseline:middle;text-anchor:start;font-size:20px;">test18</text>
+<text x="392" y="48" style="white-space:pre;dominant-baseline:middle;text-anchor:start;font-size:20px;">test14</text>
+<text x="288" y="40" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test15</text>
+<text x="152" y="48" style="white-space:pre;dominant-baseline:middle;text-anchor:end;font-size:20px;">test16</text>
+<text x="272" y="168" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test05</text>
+<text x="688" y="168" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test08</text>
+<text x="688" y="632" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">test11</text>
+<text x="272" y="632" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">test02</text>
+<text x="272" y="328" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">test04</text>
+<text x="408" y="176" style="white-space:pre;dominant-baseline:middle;text-anchor:start;font-size:20px;">test06</text>
+<text x="552" y="176" style="white-space:pre;dominant-baseline:middle;text-anchor:end;font-size:20px;">test07</text>
+<text x="688" y="328" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">test09</text>
+<text x="688" y="504" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test10</text>
+<text x="600" y="624" style="white-space:pre;dominant-baseline:middle;text-anchor:end;font-size:20px;">test12</text>
+<text x="272" y="504" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test03</text>
+<text x="528" y="40" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">test13</text>
+<text x="424" y="624" style="white-space:pre;dominant-baseline:middle;text-anchor:start;font-size:20px;">test01</text>
+<use xlink:href="#svg/svg_port" x="704" y="64" transform = "rotate(0 704 64)" />
+<text x="692" y="64" style="white-space:pre;dominant-baseline:middle;text-anchor:end;font-size:20px;">Vin</text>
+<use xlink:href="#svg/svg_port" x="816" y="64" transform = "rotate(0 816 64)" />
+<text x="828" y="64" style="white-space:pre;dominant-baseline:middle;text-anchor:start;font-size:20px;">Vin</text>
+<use xlink:href="#svg/svg_port" x="544" y="320" transform = "rotate(0 544 320)" />
+<text x="544" y="304" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">Vin</text>
+<use xlink:href="#svg/svg_port" x="544" y="464" transform = "rotate(0 544 464)" />
+<text x="544" y="480" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">Vin</text>
+<use xlink:href="#svg/svg_supply" x="432" y="320" transform = "rotate(0 432 320)" />
+<text x="432" y="297" style="white-space:pre;dominant-baseline:baseline;text-anchor:middle;font-size:20px;">Vdd</text>
+<use xlink:href="#svg/svg_supply" x="432" y="464" transform = "rotate(180 432 464)" />
+<text x="432" y="487" style="white-space:pre;dominant-baseline:hanging;text-anchor:middle;font-size:20px;">Vss</text>
+<use xlink:href="#svg/svg_gnd" x="816" y="512" transform = "rotate(0 816 512)" />
+<use xlink:href="#svg/svg_gnd" x="816" y="288" transform = "rotate(0 816 288)" />
+<use xlink:href="#svg/svg_gnd" x="944" y="400" transform = "rotate(0 944 400)" />
+<use xlink:href="#svg/svg_gnd" x="880" y="400" transform = "rotate(0 880 400)" />
+<use xlink:href="#svg/svg_gnd" x="816" y="336" transform = "rotate(0 816 336)" />
+</g>
+</svg>

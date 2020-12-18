@@ -1,0 +1,13 @@
+seed = \val{random}
+
+\runParam{x = [2, 3, 4, 5]}
+\runParam{y = [6, 7, 8, 9] }
+\runParam{k = [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]}
+\question Given \val={x}, \val={y}, and \val={k} find $z = x^2+y-k$
+\textbf{Solution}
+\run={z=x^2+y-k}\\ 
+\hlite{\val={z}}
+\val{random}
+here
+
+
