@@ -1,8 +1,0 @@
-Running ltspice2svg (log file)
-Input: testsExamples/Test/example.asc
-output path: testsExamples/Test/
-current directory: /Users/davidjohns/Dropbox/Icewire/go/src/ltspice2svg/
-
-
-file.svg written
-
