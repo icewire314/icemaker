@@ -19,7 +19,7 @@
             //    "-text=symbol",
             //    "Problems/svg_block_adc.asy",
                "-export=ltspiceExamples/ltspice/example.svg",
-              // "-text=noChange",
+              // "-fontType=Arial",
                "ltspiceExamples/ltspice/example.asc",
             ]
         }

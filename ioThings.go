@@ -18,7 +18,7 @@ import (
 // get flag info and argument
 // NOTE: arg MUST occur AFTER flags when calling program
 // icemaker -export=tmp/outfilename.tex -sigDigits=3 infilename.prb
-func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, randomStr, sigDigits, txtMode, dotsMode, logOut string) {
+func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, randomStr, sigDigits, txtMode, dotsMode, fontType, logOut string) {
 	var inFileStr string
 
 	outFilePtr := flag.String("export", "", "outFile - REQUIRED FLAG\nFile extension should be .tex or .svg")
@@ -37,6 +37,7 @@ func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, r
 	// - if "symbol", the input file should be an ltspice symbol and the output will be the svg output for that symbol to be
 	//   included in the symDefn file
 	dotsModePtr := flag.String("Tdots", "true", "true or false\nPlace dots on wired T connections\n")
+	fontTypePtr := flag.String("fontType", "Arial", "Font type to be used in svg output\n")
 	versionPtr := flag.Bool("version", false, "Print out version")
 
 	flag.Parse()
@@ -88,6 +89,7 @@ func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, r
 
 	txtMode = *txtModePtr
 	dotsMode = *dotsModePtr
+	fontType = *fontTypePtr
 	return
 }
 

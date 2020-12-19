@@ -76,6 +76,8 @@
 		</rdf:RDF>
 	  </metadata>
 	
+<style>text {font-family:Arial;}</style>
+
 <defs>
 	<g id="svg_supply">
       <polygon points="-6,0 0,-15 6,0" style="fill:black;fill-opacity:1;stroke:black;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />

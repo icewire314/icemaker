@@ -38,17 +38,19 @@ func ltSymbol2svg(symbolInput, symbolName string, outFile fileInfo, fileWrite bo
 	return outString
 }
 
-func ltSpice2svg(LTSpiceInput, symPath, txtMode, dotsMode string, outFile fileInfo) {
+func ltSpice2svg(LTSpiceInput, symPath, txtMode, dotsMode, fontType string, outFile fileInfo) {
 	// MAIN FUNCTION *********************************************************** //
 	var outString, symbolDefn, logOut string
 	var headerSlc []string // slice containing the header including the svg definitions
 	var drawSlc []string   // slice containing the svg output
 	var WiresInt [][4]int  // 2D slice of wire xy points (integer type)
 	var inLines []string   // slice containing LTSpice file (each slice element is one line)
+	var fontLine string    // the font used for text in the svg file
 	var reFixMu = regexp.MustCompile(`(?m)\&\#956;`)
 	//symbolDefn = getSymDefn()
 	tail := "</g>\n</svg>"
-
+	fontType = "Arial"
+	fontLine = "<style>text {font-family:" + fontType + ";}</style>\n"
 	inLines = strings.Split(LTSpiceInput, "\n")
 
 	symbolDefn, logOut = getSymbolDefn(symPath, inLines)
@@ -59,6 +61,7 @@ func ltSpice2svg(LTSpiceInput, symPath, txtMode, dotsMode string, outFile fileIn
 	}
 
 	headerSlc = addHeader(inLines, headerSlc)
+	headerSlc = append(headerSlc, fontLine)
 	headerSlc = append(headerSlc, strings.Split(symbolDefn, "\n")...) // append symbolDefn onto headerSlc
 	header3 := "<g inkscape:label=\"Layer 1\" inkscape:groupmode=\"layer\" id=\"layer1\">"
 	drawSlc = append(drawSlc, header3)

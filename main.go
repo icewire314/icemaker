@@ -74,7 +74,7 @@ type fileInfo struct {
 // also software version is output at beginning of output file
 
 func main() {
-	var inFileStr, logOut, header, symPath string
+	var inFileStr, logOut, header, symPath, fontType string
 	var sigDigits, txtMode, dotsMode, randomStr string
 	var inFile, outFile fileInfo
 	var version string
@@ -85,7 +85,7 @@ func main() {
 	//	todayDate = currentTime.Format("2006-01-02")
 	version = "0.7.5" + " (" + "2020-08-05" + ")"
 
-	inFile, outFile, symPath, randomStr, sigDigits, txtMode, dotsMode, logOut = commandFlags(version) // outFile depends on inFile file extension
+	inFile, outFile, symPath, randomStr, sigDigits, txtMode, dotsMode, fontType, logOut = commandFlags(version) // outFile depends on inFile file extension
 	fileWriteString("", outFile.full)
 	if logOut != "" {
 		logOut = logOutWrite(logOut, -1, outFile)
@@ -112,7 +112,7 @@ func main() {
 		case "symbol":
 			_ = ltSymbol2svg(ltSpiceInput, inFile.name, outFile, true)
 		default:
-			ltSpice2svg(ltSpiceInput, symPath, txtMode, dotsMode, outFile)
+			ltSpice2svg(ltSpiceInput, symPath, txtMode, dotsMode, fontType, outFile)
 		}
 	default:
 
