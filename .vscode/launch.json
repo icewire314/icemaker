@@ -18,10 +18,9 @@
             //    "-export=Problems/tmp/svg_block_adc.svg",
             //    "-text=symbol",
             //    "Problems/svg_block_adc.asy",
-               "-export=Problems/tmp/example.svg",
+               "-export=ltspiceExamples/ltspice/example.svg",
               // "-text=noChange",
-               "-symPath=/Users/davidjohns/Desktop/tmp3",
-               "Problems/example.asc",
+               "ltspiceExamples/ltspice/example.asc",
             ]
         }
     ]

@@ -481,6 +481,7 @@ func addSymbols(inLines, drawSlc []string, symbolDefn, txtMode string) ([]string
 				x1, y1, size, vertPos, horizPos, defaultText = getDefault(symbolDefn, symbol, "0", rotateNum)
 			}
 			switch {
+			case vertPos == "Invis": // do nothing since it should be invisible
 			case text == ".", text[0] == "X"[0], text[0] == "U"[0]: // do nothing if one of these cases X and U for subcircuits or other
 			default:
 				switch txtMode {
