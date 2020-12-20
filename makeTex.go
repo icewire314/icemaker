@@ -70,6 +70,7 @@ func logOutWrite(logOut string, lineNum int, outFile fileInfo) string {
 }
 
 func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varSingle, ltSpice bool) (string, string, string) {
+	// ltSpice is a bool that if true implies we are replacing things in a .asc file (instead of a .prb file)
 	var result []string
 	var head, tail, replace, logOut, newLog string
 	var valCmd, valCmdType, runCmd, runCmdType string
@@ -561,29 +562,19 @@ func strIncrement(inString string, k int) string {
 func function2Latex(inString string) string {
 	var result []string
 	var funcInput, head, tail string
-	var valFunc []string // the functions that change from func() to \func{}
-	// need to use the physics package in latex
-	// need to change () to {} so longer insides work correctly
 	var re0 = regexp.MustCompile(`(?m)`)
-	valFunc = append(valFunc, "sqrt", "abs", "sin", "cos", "tan", "asin", "acos", "atan")
-	valFunc = append(valFunc, "exp", "log")
-	for i := range valFunc {
-		re0 = regexp.MustCompile(`(?mU)^(?P<res1>.*\W)(?P<res2>` + valFunc[i] + `\(.*)$`)
+	for key := range func1 {
+		re0 = regexp.MustCompile(`(?mU)^(?P<res1>.*\W)(?P<res2>` + key + `\(.*)$`)
 		for re0.MatchString(inString) {
 			result = re0.FindStringSubmatch(inString)
 			head = result[1]
 			tail = result[2]
 			funcInput, tail = matchBrackets(tail, "(")
-			inString = head + "\\" + valFunc[i] + "{" + funcInput + "}" + tail
+			if key == "log10" { // latex command cannot be \log10 since numbers not allowed
+				key = "logten" // change to logten so that \logten{} is used for latex
+			}
+			inString = head + "\\" + key + "{" + funcInput + "}" + tail
 		}
-	}
-	re0 = regexp.MustCompile(`(?mU)^(?P<res1>.*\W)(?P<res2>` + "atand" + `\(.*)$`) // need to take care of atand by itself as it is not in Physics package
-	for re0.MatchString(inString) {
-		result = re0.FindStringSubmatch(inString)
-		head = result[1]
-		tail = result[2]
-		funcInput, tail = matchBrackets(tail, "(")
-		inString = head + "\\mbox{atan}" + "(" + funcInput + ")" + tail
 	}
 	return inString
 }
@@ -640,10 +631,16 @@ func psuedoRand(x0 int) int {
 
 func checkVariable(variable, logOut string) (string, string) {
 	switch variable {
-	case "random":
-		logOut = logOut + "random is a reserved variable and cannot be assigned"
-		variable = "randomIsReservedVariable"
+	case "random", "parll":
+		logOut = logOut + variable + " is a reserved variable and cannot be assigned"
+		variable = variable + "IsReservedVariable"
 	default:
+	}
+	for key := range func1 {
+		if variable == key {
+			logOut = logOut + key + " is a reserved variable and cannot be assigned"
+			variable = key + "IsReservedVariable"
+		}
 	}
 	return variable, logOut
 }

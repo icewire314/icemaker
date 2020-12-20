@@ -12,15 +12,15 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [
-             //  "-export=Problems/tmp/basic01.tex",
+               "-export=Problems/tmp/bracketTest.tex",
              //  "-sigDigits=7", "-random=32",
-             //  "Problems/basic01.prb",
+               "Problems/bracketTest.prb",
             //    "-export=Problems/tmp/svg_block_adc.svg",
             //    "-text=symbol",
             //    "Problems/svg_block_adc.asy",
-               "-export=ltspiceExamples/ltspice/example.svg",
+            //   "-export=ltspiceExamples/ltspice/example.svg",
               // "-fontType=Arial",
-               "ltspiceExamples/ltspice/example.asc",
+             //  "ltspiceExamples/ltspice/example.asc",
             ]
         }
     ]

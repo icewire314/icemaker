@@ -25,26 +25,33 @@ var func2 = map[string]struct {
 }
 
 var func1 = map[string]func(float64) float64{
+	// if adding a new function... may need to change preamble.tex
 	"abs":   math.Abs,
 	"asin":  math.Asin,
+	"asind": asind, // arc sin(x) where x is in degrees
 	"asinh": math.Asinh,
 	"acos":  math.Acos,
+	"acosd": acosd, // arc cos(x) where x is in degrees
 	"acosh": math.Acosh,
 	"atan":  math.Atan,
-	"atand": atand,
+	"atand": atand, // arc tan(x) where x is in degrees (not radians)
 	"atanh": math.Atanh,
 	"ceil":  math.Ceil,
 	"cos":   math.Cos,
+	"cosd":  cosd, // cos(x) where x is in degrees
 	"cosh":  math.Cosh,
 	"exp":   math.Exp,
 	"floor": math.Floor,
-	"log":   math.Log,
-	"log10": math.Log10,
+	"ln":    math.Log,   // also natural log
+	"log":   math.Log,   // natural log
+	"log10": math.Log10, // log base 10
 	"round": math.Round,
 	"sin":   math.Sin,
+	"sind":  sind, // sin(x) where x is in degrees
 	"sinh":  math.Sinh,
 	"sqrt":  math.Sqrt,
 	"tan":   math.Tan,
+	"tand":  tand, // tan(x) where x is in degrees
 	"tanh":  math.Tanh,
 	"neg":   neg,
 	"pos":   pos,
@@ -83,7 +90,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano()) // needed so a new seed occurs every time the program is run
 	//currentTime := time.Now()
 	//	todayDate = currentTime.Format("2006-01-02")
-	version = "0.7.5" + " (" + "2020-08-05" + ")"
+	version = "0.8.0" + " (" + "2020-12-20" + ")"
 
 	inFile, outFile, symPath, randomStr, sigDigits, txtMode, dotsMode, fontType, logOut = commandFlags(version) // outFile depends on inFile file extension
 	fileWriteString("", outFile.full)

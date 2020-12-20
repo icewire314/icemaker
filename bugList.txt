@@ -1,8 +1,6 @@
 Icemaker changes to be made
 
-- Invisible refdes in LTSpice are still drawn in SVG
-
-- add font choice for text in SVG for ltspice2svg
+- error if "{" or "}" are in run statement
 
 - Let .ASC work as well as .asc in website
 
