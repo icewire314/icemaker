@@ -1,9 +1,5 @@
 Icemaker changes to be made
 
-- error if "{" or "}" are in run statement
-
-- Let .ASC work as well as .asc in website
-
 - 3 ways to enter parameter
    1) List of parameters
        \runParam{V_1 = [2, 3, 4, 5]}
@@ -17,9 +13,6 @@ Icemaker changes to be made
    3) Min, max, stepsize
        \runParam{V_1 = 2:5:1} // min;max;stepsize
  
-- add tand, sind, cosd, asind, acosd so all work in degrees
-
-- check that atan() and tan() print out brackets correctly
 
 - all errors should be put in comments at top of .tex file
   (variable not found, etc)
