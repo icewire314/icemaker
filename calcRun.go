@@ -22,7 +22,7 @@ func runCode(inString string, varAll map[string]varSingle) (assignVar, outString
 	//	var reGetFirstWord = regexp.MustCompile(`(?m)^\s*(?P<res1>\w*)`)
 	var reUnits = regexp.MustCompile(`(?m)\\paramUnits(?P<res1>{.*)$`)
 	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
-	var reValid = regexp.MustCompile(`(?m)[\w|=|*|/|+|\-|^|(|)|\s|\.]+`) // valid characters in statement
+	var reValid = regexp.MustCompile(`(?m)[\w|=|*|/|+|\-|^|(|)|\s|\.|,]+`) // valid characters in statement
 
 	if reOptions.MatchString(inString) {
 		options = reOptions.FindStringSubmatch(inString)[1]
