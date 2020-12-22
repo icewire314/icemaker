@@ -1,17 +1,22 @@
 Icemaker changes to be made
 
 - 3 ways to enter parameter
+   \runParam keywords: sigDigits, random, variations
    1) List of parameters
        \runParam{V_1 = [2, 3, 4, 5]}
        or
        \runParam{V_1 = [2 3 4 5]}
+       (default is first variable)
    
    2) default with global %variation and # of parameters
-       \runParamSetup{20:4} // %variation;# of parameters done once or more
+       \runParam{variation = 20:4} // %variation;# of parameters
        \runParam{V_1 = 2}
+       (default is nominal variable)
+       (variation is a keyword)
 
    3) Min, max, stepsize
        \runParam{V_1 = 2:5:1} // min;max;stepsize
+       (default is min variable)
  
 
 - all errors should be put in comments at top of .tex file

@@ -12,9 +12,9 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [
-               "-export=Problems/tmp/bracketTest.tex",
+               "-export=Problems/tmp/basic01.tex",
              //  "-sigDigits=7", "-random=32",
-               "Problems/bracketTest.prb",
+               "Problems/basic01.prb",
             //    "-export=Problems/tmp/svg_block_adc.svg",
             //    "-text=symbol",
             //    "Problems/svg_block_adc.asy",

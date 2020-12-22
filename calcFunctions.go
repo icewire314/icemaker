@@ -78,3 +78,7 @@ func atand(a float64) float64 { // returns arctan(a) in degrees
 func parll(a, b float64) float64 { // parallel function for calculation of parallel resistors or series capacitors
 	return 1 / (1/a + 1/b)
 }
+
+func dummyFunc(a float64) float64 {
+	return a
+}

@@ -22,6 +22,26 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 	// the downside of this approach is when changing a key value struct element, need to copy struct first then change
 	// struct element then copy it back into hash table.  Can not change just a single struct element without this copy first
 
+	// WITH VARIABLE MAP, keywords variation/random/sigDigits are used and defaults set below
+	// stored in MAP so user can change them using \runParam{random=true}... during run of program
+	varAll["variation"] = varSingle{}
+	tmp2 := varAll["variation"]
+	tmp2.latex = "variation"
+	tmp2.units = "20:4" // using units as storage for variation value
+	varAll["variation"] = tmp2
+
+	varAll["random"] = varSingle{}
+	tmp2 = varAll["random"]
+	tmp2.latex = "random"
+	tmp2.units = randomStr
+	varAll["random"] = tmp2
+
+	varAll["sigDigits"] = varSingle{}
+	tmp2 = varAll["sigDigits"]
+	tmp2.latex = "sigDigits"
+	tmp2.units = sigDigits
+	varAll["sigDigits"] = tmp2
+
 	inLines = strings.Split(problemInput, "\n")
 	for i := range inLines {
 		inLines[i], comment = deCommentLatex(inLines[i])
@@ -29,7 +49,7 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 		if logOut != "" {
 			logOut = logOutWrite(logOut, i, outFile)
 		}
-		inLines[i], randomStr, logOut = valRunReplace(inLines[i], sigDigits, randomStr, varAll, false)
+		inLines[i], logOut = valRunReplace(inLines[i], varAll, false)
 		if logOut != "" {
 			logOut = logOutWrite(logOut, i, outFile)
 		}
@@ -42,7 +62,7 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 				linesToRemove = append(linesToRemove, i) // do it later so that line numbers still correct if an error is reported after a line removal
 			}
 		}
-		randomStr, logOut = checkLTSpice(inLines[i], inFile, outFile, sigDigits, randomStr, varAll)
+		logOut = checkLTSpice(inLines[i], inFile, outFile, sigDigits, varAll)
 		if logOut != "" {
 			logOut = logOutWrite(logOut, i, outFile)
 		}
@@ -69,7 +89,7 @@ func logOutWrite(logOut string, lineNum int, outFile fileInfo) string {
 	return logOut
 }
 
-func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varSingle, ltSpice bool) (string, string, string) {
+func valRunReplace(inString string, varAll map[string]varSingle, ltSpice bool) (string, string) {
 	// ltSpice is a bool that if true implies we are replacing things in a .asc file (instead of a .prb file)
 	var result []string
 	var head, tail, replace, logOut, newLog string
@@ -86,9 +106,9 @@ func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varS
 			inString = reFixSpice.ReplaceAllString(inString, "$res1")
 		}
 	}
-	for reFirstvalRunCmd.MatchString(inString) { // found a val or run command
-		if reFirstvalCmd.MatchString(inString) {
-			result = reFirstvalCmd.FindStringSubmatch(inString)
+	for reFirstvalRunCmd.MatchString(inString) { // chec for val or run command
+		if reFirstvalCmd.MatchString(inString) { // check for a val command
+			result = reFirstvalCmd.FindStringSubmatch(inString) // found a val command
 			head = result[1]
 			valCmdType = result[2]
 			valCmd, tail = matchBrackets(result[3], "{")
@@ -99,12 +119,12 @@ func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varS
 			switch valCmdType {
 			case "val": // print out result in engineering notation (ex: 3.14159 or 23e3 or 240e-6)
 				switch valCmd {
-				case "random": // if \val{random} detected, then print random out which is the random seed
-					replace = randomStr
+				case "random", "sigDigits", "variation":
+					replace = varAll[valCmd].units
 				default:
 					_, _, answer, newLog = runCode(valCmd, varAll)
 					if newLog == "" {
-						replace = value2Eng(answer, sigDigits)
+						replace = value2Eng(answer, varAll["sigDigits"].units)
 					} else {
 						replace = newLog
 					}
@@ -112,14 +132,14 @@ func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varS
 			case "val=": // print out var = result (with SI units).  (ex: V_1 = 3V or v_{tx} = 23mV or D = 10km)
 				_, ok = varAll[valCmd]
 				if ok {
-					replace = "\\mbox{$" + varAll[valCmd].latex + " = " + value2SI(varAll[valCmd].value, varAll[valCmd].units, sigDigits) + "$}"
+					replace = "\\mbox{$" + varAll[valCmd].latex + " = " + value2SI(varAll[valCmd].value, varAll[valCmd].units, varAll["sigDigits"].units) + "$}"
 				} else {
 					replace = "\\mbox{$" + valCmd + " \\text{ NOT DEFINED}$}"
 				}
 			case "valU": // print out result (with SI units). (ex: 3V or 23mV or 10km)
 				_, ok = varAll[valCmd]
 				if ok {
-					replace = "\\mbox{$" + value2SI(varAll[valCmd].value, varAll[valCmd].units, sigDigits) + "$}"
+					replace = "\\mbox{$" + value2SI(varAll[valCmd].value, varAll[valCmd].units, varAll["sigDigits"].units) + "$}"
 				} else {
 					replace = "\\mbox{$" + valCmd + " \\text{ NOT DEFINED}$}"
 				}
@@ -127,7 +147,7 @@ func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varS
 				// if here, then \val**something else** found so an error message
 				logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND\n"
 				inString = logOut
-				return "", inString, logOut
+				return inString, logOut
 			}
 		}
 		if !ltSpice { // also run these commands below if ltSpice is false
@@ -140,14 +160,14 @@ func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varS
 				switch runCmdType {
 				case "runParam": // Used for setting parameters (either default or random)
 					replace = "**deletethis**"
-					randomStr, sigDigits, newLog = makeParam(runCmd, randomStr, varAll)
+					newLog = makeParam(runCmd, varAll)
 				case "runSilent": // run statement but do not print anything
 					replace = "**deletethis**"
 					_, _, _, newLog = runCode(runCmd, varAll)
 				case "run": // run statement and print statement (ex: v_2 = 3*V_t)
 					assignVar, runCmd, answer, newLog = runCode(runCmd, varAll)
 					if assignVar == "" {
-						replace = value2Eng(answer, sigDigits) // not an assignment statment so just return  answer
+						replace = value2Eng(answer, varAll["sigDigits"].units) // not an assignment statment so just return  answer
 					} else {
 						replace = "\\mbox{$" + latexStatement(runCmd, varAll) + "$}"
 					}
@@ -156,29 +176,29 @@ func valRunReplace(inString, sigDigits, randomStr string, varAll map[string]varS
 					if assignVar == "" {
 						replace = "error: not an assignment statement"
 					} else {
-						replace = "\\mbox{$" + latexStatement(runCmd, varAll) + " = " + value2SI(varAll[assignVar].value, varAll[assignVar].units, sigDigits) + "$}"
+						replace = "\\mbox{$" + latexStatement(runCmd, varAll) + " = " + value2SI(varAll[assignVar].value, varAll[assignVar].units, varAll["sigDigits"].units) + "$}"
 					}
 				case "run()": // same as run but include = bracket values in statement (ex" v_2 = 3*V_t = 3*(25e-3))
 					_, runCmd, _, newLog = runCode(runCmd, varAll)
-					replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, sigDigits, varAll) + "$}"
+					replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, varAll["sigDigits"].units, varAll) + "$}"
 				case "run()=": // same as run() but include result (ex: v_2 = 3*V_t = 3*(25e-3)=75mV)
 					assignVar, runCmd, _, newLog = runCode(runCmd, varAll)
-					replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, sigDigits, varAll) + " = " + value2SI(varAll[assignVar].value, varAll[assignVar].units, sigDigits) + "$}"
+					replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, varAll["sigDigits"].units, varAll) + " = " + value2SI(varAll[assignVar].value, varAll[assignVar].units, varAll["sigDigits"].units) + "$}"
 				default:
 					// if here, then error as \run**something else** is here
 					logOut = "\\" + runCmdType + " *** NOT A VALID COMMAND\n"
 					inString = logOut
-					return "", inString, logOut
+					return inString, logOut
 				}
 			}
 		}
 		inString = head + replace + tail
 		logOut = logOut + newLog
 	}
-	return inString, randomStr, logOut
+	return inString, logOut
 }
 
-func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits, randomStr string, varAll map[string]varSingle) (string, string) {
+func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits string, varAll map[string]varSingle) string {
 	var spiceFilename, spiceFile, logOut string
 	var inLines []string
 	var reLTSpice = regexp.MustCompile(`(?mU)\\incProbLTspice.*{\s*(?P<res1>\S*)\s*}`)
@@ -186,21 +206,21 @@ func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits, randomSt
 		spiceFilename = reLTSpice.FindStringSubmatch(inString)[1]
 		spiceFile, logOut = fileReadString(filepath.Join(inFile.path, spiceFilename+".asc"))
 		if logOut != "" {
-			return "", logOut
+			return logOut
 		}
 		spiceFile, _ = convertIfUtf16(spiceFile)
 		inLines = strings.Split(spiceFile, "\n")
 		for i := range inLines {
-			inLines[i], randomStr, logOut = valRunReplace(inLines[i], sigDigits, randomStr, varAll, true)
+			inLines[i], logOut = valRunReplace(inLines[i], varAll, true)
 			if logOut != "" {
 				logOut = logOut + " - error in " + spiceFilename + ".asc"
-				return randomStr, logOut
+				return logOut
 			}
 		}
 		spiceFile = strings.Join(inLines, "\n")
 		fileWriteString(spiceFile, filepath.Join(outFile.path, spiceFilename+"_update.asc"))
 	}
-	return randomStr, logOut
+	return logOut
 }
 
 func syntaxCheck(statement string) (logOut string) {
@@ -249,7 +269,7 @@ func bracketCheck(inString string, leftBrac string) (logOut string) {
 	return
 }
 
-func makeParam(statement, randomStr string, varAll map[string]varSingle) (string, string, string) {
+func makeParam(statement string, varAll map[string]varSingle) string {
 	var result, values []string
 	var assignVar, prefix, units, latex string
 	var value float64
@@ -262,11 +282,12 @@ func makeParam(statement, randomStr string, varAll map[string]varSingle) (string
 	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
 	var reRandom = regexp.MustCompile(`(?m)random\s*=\s*(?P<res1>\w+)`)
 	var reSigDigits = regexp.MustCompile(`(?m)sigDigits\s*=\s*(?P<res1>\w+)`)
-	if reRandom.MatchString(statement) {
-		randomStr = reRandom.FindStringSubmatch(statement)[1]
+	var randomStr = varAll["random"].units
+	if reRandom.MatchString(statement) { // check if assigning "random" variable in \runParam
+		randomStr = reRandom.FindStringSubmatch(statement)[1] // update randomStr
 	}
-	random, logOut = checkRandom(randomStr, logOut)
-	if reSigDigits.MatchString(statement) {
+	random, logOut = checkRandom(randomStr, logOut) //check that randomStr is one of positive integer/true/false
+	if reSigDigits.MatchString(statement) {         // check if assigning "sigDigits" variable in \runParam
 		sigDigits = reSigDigits.FindStringSubmatch(statement)[1]
 		sigDigits, logOut = checkSigDigits(sigDigits, logOut)
 	}
@@ -307,12 +328,12 @@ func makeParam(statement, randomStr string, varAll map[string]varSingle) (string
 			num = randInt(len(values), random)
 			randomStr = strconv.Itoa(random)
 		}
-		value, _ = strconv.ParseFloat(values[num], 64)
+		value, _ = strconv.ParseFloat(values[num], 64) // convert string to float64 value
 		value = value * prefix2float(prefix)
 		tmp2.value = value
 		varAll[assignVar] = tmp2
 	}
-	return randomStr, sigDigits, logOut
+	return logOut
 }
 
 func getPrefixUnits(prefixUnits string) (prefix string, units string) {
@@ -356,7 +377,7 @@ func bracketed(statement, sigDigits string, varAll map[string]varSingle) (outStr
 			_, ok := varAll[result[i]]
 			if ok {
 				re2 = regexp.MustCompile(`(?m)` + result[i])
-				sub = "(" + value2Eng(varAll[result[i]].value, sigDigits) + ")"
+				sub = "(" + value2Eng(varAll[result[i]].value, varAll["sigDigits"].units) + ")"
 				backPart = re2.ReplaceAllString(backPart, sub)
 			}
 		}
