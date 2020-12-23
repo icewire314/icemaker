@@ -271,16 +271,19 @@ func bracketCheck(inString string, leftBrac string) (logOut string) {
 
 func runParamFunc(statement string, varAll map[string]varSingle, configParam map[string]string) string {
 	var assignVar, rightSide, key, logOut string
-	var remainder, units, latex, prefix string
+	var units, latex, prefix string
 	var value float64
+	var values []float64
 	var num, random int
-	var result, values []string
+	var result, valuesStr []string
+	var min, max, stepSize float64
 	var reEqual = regexp.MustCompile(`(?m)^\s*(?P<res1>\w+)\s*=\s*(?P<res2>.*)\s*`)
 	var reArray = regexp.MustCompile(`(?m)^\s*\[(?P<res1>.*)\]\s*(?P<res2>.*)`)
 	var reCommaSep = regexp.MustCompile(` *, *`) // used to create a slice of possible random values input: 2,3, 5,  8 creates slice of 4 elements
 	var reOptions = regexp.MustCompile(`(?m)#(?P<res1>.*)$`)
 	var reUnits = regexp.MustCompile(`(?m)\\paramUnits(?P<res1>{.*)$`)
 	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
+	var reStep = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)\s*;\s*(?P<res2>\S+)\s*;\s*(?P<res3>\S+)`)
 	if reEqual.MatchString(statement) {
 		result = reEqual.FindStringSubmatch(statement)
 		assignVar = result[1]
@@ -322,16 +325,38 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 		switch {
 		case reArray.MatchString(rightSide): // it is an array runParam statement
 			result = reArray.FindStringSubmatch(rightSide)
-			values = reCommaSep.Split(result[1], -1)
-			remainder = result[2]
-		case reArray.MatchString("not here"): // put step match here
+			valuesStr = reCommaSep.Split(result[1], -1)
+			for i := range valuesStr {
+				tmp, _ := strconv.ParseFloat(valuesStr[i], 64)
+				values = append(values, tmp)
+			}
+		case reStep.MatchString(rightSide): // it is a step runParam statement
+			result = reStep.FindStringSubmatch(rightSide)
+			min, _ = strconv.ParseFloat(result[1], 64)
+			max, _ = strconv.ParseFloat(result[2], 64)
+			stepSize, _ = strconv.ParseFloat(result[3], 64)
+			if stepSize < 0 {
+				logOut = "step size must be greater than zero"
+				return logOut
+			}
+			if max < min {
+				logOut = "max value must be larger than min value"
+				return logOut
+			}
+			if (max - min/stepSize) > 200 {
+				logOut = "step size is too small and results in more than 200 values"
+				return logOut
+			}
+			for x := min; x <= max; x = x + stepSize {
+				values = append(values, x)
+			}
 		case reArray.MatchString("not here"): // put variation match here
 		default:
 			logOut = "not a valid \runParam statement"
 			return logOut
 		}
-		if reOptions.MatchString(remainder) {
-			options := reOptions.FindStringSubmatch(remainder)[1] // the stuff after #
+		if reOptions.MatchString(rightSide) {
+			options := reOptions.FindStringSubmatch(rightSide)[1] // the stuff after #
 			if reUnits.MatchString(options) {
 				tmp := reUnits.FindStringSubmatch(options)[1] // just the stuff {.*$
 				preUnits, _ := matchBrackets(tmp, "{")        // a string that has prefix and units together
@@ -355,81 +380,7 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 			num = randInt(len(values), random)
 			configParam["paramRandom"] = strconv.Itoa(random)
 		}
-		value, _ = strconv.ParseFloat(values[num], 64) // convert string to float64 value
-		value = value * prefix2float(prefix)
-		tmp2.value = value
-		varAll[assignVar] = tmp2
-	}
-	return logOut
-}
-
-func runParamArray(statement string, varAll map[string]varSingle, configParam map[string]string) string {
-	var result, values []string
-	var assignVar, prefix, units, latex string
-	var value float64
-	var num, random int
-	var logOut, sigDigits string
-	var re0 = regexp.MustCompile(`(?m)^\s*(?P<res1>\w+)\s*=\s*\[(?P<res2>.*)\]`)
-	var reCommaSep = regexp.MustCompile(` *, *`) // used to create a slice of possible random values input: 2,3, 5,  8 creates slice of 4 elements
-	var reOptions = regexp.MustCompile(`(?m)#(?P<res1>.*)$`)
-	var reUnits = regexp.MustCompile(`(?m)\\paramUnits(?P<res1>{.*)$`)
-	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
-	var reRandom = regexp.MustCompile(`(?m)paramRandom\s*=\s*(?P<res1>\w+)`)
-	var reSigDigits = regexp.MustCompile(`(?m)sigDigits\s*=\s*(?P<res1>\w+)`)
-	var reValid = regexp.MustCompile(`(?m)[\w|=|*|/|+|\-|^|(|)|\s|\.|,|#|\\|\[|\]]+`) // valid characters in statement
-	// first check if all characters in statement are valid characters
-	shouldBeBlank := reValid.ReplaceAllString(statement, "")
-	if shouldBeBlank != "" {
-		logOut = "character(s) " + shouldBeBlank + " should not be in a \\runParam statement"
-		return logOut
-	}
-	if reRandom.MatchString(statement) { // check if assigning "paramRandom" variable in \runParam
-		configParam["paramRandom"] = reRandom.FindStringSubmatch(statement)[1] // update paramRandom
-	}
-	random, logOut = checkRandom(configParam["paramRandom"], logOut) //check that paramRandom is one of positive integer/true/false
-	if reSigDigits.MatchString(statement) {                          // check if assigning "sigDigits" variable in \runParam
-		sigDigits = reSigDigits.FindStringSubmatch(statement)[1]
-		sigDigits, logOut = checkSigDigits(sigDigits, logOut)
-	}
-	if re0.MatchString(statement) {
-		result = re0.FindStringSubmatch(statement)
-		assignVar = result[1]                                // the variable to change/add in varAll map
-		values = reCommaSep.Split(result[2], -1)             // slice of the possible values
-		assignVar, logOut = checkReserved(assignVar, logOut) // check if assignVar is a reserved variable
-
-		tmp2, ok := varAll[assignVar]
-		if !ok { // if !ok then this is the first time assigning this variable in varAll map
-			varAll[assignVar] = varSingle{}
-			tmp2 = varAll[assignVar]
-			tmp2.latex = latexifyVar(assignVar) // add latex version of assignVar
-			tmp2.units = defaultUnits(assignVar)
-		}
-		if reOptions.MatchString(statement) {
-			options := reOptions.FindStringSubmatch(statement)[1] // the stuff after #
-			if reUnits.MatchString(options) {
-				tmp := reUnits.FindStringSubmatch(options)[1] // just the stuff {.*$
-				preUnits, _ := matchBrackets(tmp, "{")        // a string that has prefix and units together
-				prefix, units = getPrefixUnits(preUnits)      // separate preUnits into prefix and units
-				tmp2.units = units
-			}
-			if reLatex.MatchString(options) {
-				tmp := reLatex.FindStringSubmatch(options)[1]
-				latex, _ = matchBrackets(tmp, "{")
-				tmp2.latex = latex
-			}
-		}
-		switch random {
-		case 0: // if random == 0, then num = 0 so first element is chosen
-			num = 0
-		case -1: // if random == -1, then  num is a random in between 0 and values-1 (based on machine time so pretty much really random)
-			num = rand.Intn(len(values))
-		default: // if here, random is a seed so use it to get the next random
-			random = psuedoRand(random) // update random based on the last random value (treat last one as seed)
-			num = randInt(len(values), random)
-			configParam["paramRandom"] = strconv.Itoa(random)
-		}
-		value, _ = strconv.ParseFloat(values[num], 64) // convert string to float64 value
-		value = value * prefix2float(prefix)
+		value = values[num] * prefix2float(prefix)
 		tmp2.value = value
 		varAll[assignVar] = tmp2
 	}
