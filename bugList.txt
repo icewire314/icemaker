@@ -15,7 +15,7 @@ Icemaker changes to be made
        (variation is a keyword)
 
    3) Min, max, stepsize
-       \runParam{V_1 = 2:5:1} // min;max;stepsize
+       \runParam{V_1 = 2;5;1} // min;max;stepsize
        (default is min variable)
  
 

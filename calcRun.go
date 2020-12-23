@@ -22,7 +22,6 @@ func runCode(inString string, varAll map[string]varSingle) (assignVar, outString
 	//	var reGetFirstWord = regexp.MustCompile(`(?m)^\s*(?P<res1>\w*)`)
 	var reUnits = regexp.MustCompile(`(?m)\\paramUnits(?P<res1>{.*)$`)
 	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
-	var reValid = regexp.MustCompile(`(?m)[\w|=|*|/|+|\-|^|(|)|\s|\.|,]+`) // valid characters in statement
 
 	if reOptions.MatchString(inString) {
 		options = reOptions.FindStringSubmatch(inString)[1]
@@ -39,10 +38,8 @@ func runCode(inString string, varAll map[string]varSingle) (assignVar, outString
 	lineCode = append(lineCode, inString) // anything left over is final line code
 	// run each line code
 	for i := range lineCode {
-		// first check if all characters in lineCode statement are valid characters
-		shouldBeBlank := reValid.ReplaceAllString(lineCode[i], "")
-		if shouldBeBlank != "" {
-			errCode = "character(s) " + shouldBeBlank + " should not be in a statement"
+		errCode = syntaxError(lineCode[i], "runCode")
+		if errCode != "" {
 			assignVar = "dummy"
 			outString = errCode
 			return
@@ -55,7 +52,7 @@ func runCode(inString string, varAll map[string]varSingle) (assignVar, outString
 			result = reAssignment.FindStringSubmatch(lineCode[i])
 			assignVar = result[1]
 			infixCode = result[2]
-			assignVar, errCode = checkVariable(assignVar, errCode)
+			assignVar, errCode = checkReserved(assignVar, errCode)
 			if errCode != "" {
 				outString = assignVar
 				return

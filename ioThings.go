@@ -17,7 +17,7 @@ import (
 
 // get flag info and argument
 // NOTE: arg MUST occur AFTER flags when calling program
-// icemaker -export=tmp/outfilename.tex -sigDigits=3 infilename.prb
+// icemaker -export=tmp/outfilename.tex -sigDigits=4 infilename.prb
 func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, randomStr, sigDigits, txtMode, dotsMode, fontType, logOut string) {
 	var inFileStr string
 
@@ -66,7 +66,7 @@ func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, r
 	randomStr = *randomPtr
 	_, logOut = checkRandom(randomStr, logOut)
 	sigDigits, logOut = checkSigDigits(*sigDigitsPtr, logOut)
-	sigDigits = strIncrement(sigDigits, -1) // needed so that TOTAL significant digits is sigDigits
+	// sigDigits = strIncrement(sigDigits, -1) // needed so that TOTAL significant digits is sigDigits
 	if outFile.ext == "" {
 		outFile.ext = ".log"
 		outFile.full = filepath.Join(outFile.path, outFile.name+outFile.ext)
