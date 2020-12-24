@@ -23,7 +23,7 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 	var configParam = map[string]string{
 		"paramRandom":    randomStr, // can be -1, 0, or any positive integer
 		"paramSigDigits": sigDigits, // number of significant digits to print
-		"paramVariation": "20:5",    // percentage varation : number of choices
+		"paramKFactor":   "1.3:5",   // variation from x/k to kx : number of choices
 		"paramFormat":    "eng",     // can be eng, sci or decimal
 	}
 
@@ -275,11 +275,10 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 	var value float64
 	var values []float64
 	var num, random int
-	var result, valuesStr []string
+	var result []string
 	var min, max, stepSize float64
 	var reEqual = regexp.MustCompile(`(?m)^\s*(?P<res1>\w+)\s*=\s*(?P<res2>.*)\s*`)
 	var reArray = regexp.MustCompile(`(?m)^\s*\[(?P<res1>.*)\]\s*(?P<res2>.*)`)
-	var reCommaSep = regexp.MustCompile(` *, *`) // used to create a slice of possible random values input: 2,3, 5,  8 creates slice of 4 elements
 	var reOptions = regexp.MustCompile(`(?m)#(?P<res1>.*)$`)
 	var reUnits = regexp.MustCompile(`(?m)\\paramUnits(?P<res1>{.*)$`)
 	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
@@ -306,9 +305,9 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 				case "paramFormat":
 					//
 					configParam["paramFormat"] = rightSide
-				case "paramVariation":
+				case "paramKFactor":
 					//
-					configParam["paramVariation"] = rightSide
+					configParam["paramKFactor"] = rightSide
 				default:
 					logOut = "should never be here 05"
 				}
@@ -325,16 +324,24 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 		switch {
 		case reArray.MatchString(rightSide): // it is an array runParam statement
 			result = reArray.FindStringSubmatch(rightSide)
-			valuesStr = reCommaSep.Split(result[1], -1)
-			for i := range valuesStr {
-				tmp, _ := strconv.ParseFloat(valuesStr[i], 64)
-				values = append(values, tmp)
+			values, logOut = findArrayValues(result[1])
+			if logOut != "" {
+				return logOut
 			}
 		case reStep.MatchString(rightSide): // it is a step runParam statement
 			result = reStep.FindStringSubmatch(rightSide)
-			min, _ = strconv.ParseFloat(result[1], 64)
-			max, _ = strconv.ParseFloat(result[2], 64)
-			stepSize, _ = strconv.ParseFloat(result[3], 64)
+			min, logOut = str2Float64(result[1])
+			if logOut != "" {
+				return logOut
+			}
+			max, logOut = str2Float64(result[2])
+			if logOut != "" {
+				return logOut
+			}
+			stepSize, logOut = str2Float64(result[3])
+			if logOut != "" {
+				return logOut
+			}
 			if stepSize < 0 {
 				logOut = "step size must be greater than zero"
 				return logOut
@@ -385,6 +392,27 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 		varAll[assignVar] = tmp2
 	}
 	return logOut
+}
+
+// findArrayValues returns a slice of float64 from a comma or space delimited string of numbers
+func findArrayValues(inString string) ([]float64, string) {
+	var values []float64
+	var logOut string
+	var result []string
+	var tmpNum float64
+	var re0 = regexp.MustCompile(`(?m)^\s*(?P<res1>[^,\s]+)(?P<res2>.*)$`) // find first number and rest of line
+	var re1 = regexp.MustCompile(`(?m)^\s*,*\s*`)                          // match any space and , at beginning of line
+	for re0.MatchString(inString) {
+		result = re0.FindStringSubmatch(inString)
+		tmpNum, logOut = str2Float64(result[1])
+		if logOut != "" {
+			return values, logOut
+		}
+		values = append(values, tmpNum)
+		inString = result[2]                          // rest of line
+		inString = re1.ReplaceAllString(inString, "") // delete , and spaces at beginning of line
+	}
+	return values, logOut
 }
 
 func getPrefixUnits(prefixUnits string) (prefix string, units string) {
@@ -772,4 +800,16 @@ func syntaxError(statement, cmdType string) string {
 		errCode = "should not be here in syntaxError"
 	}
 	return errCode
+}
+
+func str2Float64(numStr string) (float64, string) {
+	var x float64
+	var logOut string
+	var err error
+	x, err = strconv.ParseFloat(numStr, 64)
+	if err != nil {
+		logOut = numStr + " is not a valid number"
+		x = 1.2345678e123
+	}
+	return x, logOut
 }
