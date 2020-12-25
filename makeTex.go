@@ -90,7 +90,7 @@ func logOutWrite(logOut string, lineNum int, outFile fileInfo) string {
 func valRunReplace(inString string, varAll map[string]varSingle, configParam map[string]string, ltSpice bool) (string, string) {
 	// ltSpice is a bool that if true implies we are replacing things in a .asc file (instead of a .prb file)
 	var result []string
-	var head, tail, replace, logOut, newLog, key string
+	var head, tail, replace, logOut, newLog, key, tmp string
 	var valCmd, valCmdType, runCmd, runCmdType string
 	var assignVar string
 	var answer float64
@@ -112,42 +112,59 @@ func valRunReplace(inString string, varAll map[string]varSingle, configParam map
 			valCmd, tail = matchBrackets(result[3], "{")
 			replace = "" // so the old replace is not used
 
-			// need an error check here to ensure valCmd is only a word (no equation). Use \run{} if an equation with no assigned value needed
-
-			switch valCmdType {
-			case "val": // print out result in engineering notation (ex: 3.14159 or 23e3 or 240e-6)
-				for key = range configParam {
-					if valCmd == key {
-						replace = configParam[key] // printing out a configParam
-					}
+			// first check if configParam going to be printed out and if so, then print it
+			for key = range configParam {
+				if valCmd == key {
+					replace = configParam[key] // printing out a configParam
 				}
-				if replace == "" { // no configParam found then do below
+			}
+			if replace == "" { // no configParam found then do below
+				switch valCmdType {
+				case "val", "valNDec", "valNEng", "valNsci":
 					_, _, answer, newLog = runCode(valCmd, varAll)
 					if newLog == "" {
-						replace = float2Str(answer, configParam)
+						if valCmdType == "val" {
+							replace = float2Str(answer, configParam)
+						} else {
+							tmp = configParam["paramFormat"]
+							switch valCmdType {
+							case "valNDec":
+								configParam["paramFormat"] = "decimal"
+							case "valNEng":
+								configParam["paramFormat"] = "eng"
+							case "valNSci":
+								configParam["paramFormat"] = "sci"
+							default: // never here
+							}
+							replace = float2Str(answer, configParam)
+							configParam["paramFormat"] = tmp
+						}
 					} else {
 						replace = newLog
 					}
+				case "val=", "valU", "valLtx":
+					_, ok = varAll[valCmd] // check that valCmd is a variable in the varAll map
+					if ok {
+						switch valCmdType {
+						case "val=": // print out var = result (with SI units).  (ex: V_1 = 3V or v_{tx} = 23mV or D = 10km)
+							replace = "\\mbox{$" + varAll[valCmd].latex + " = " + valueInSI(valCmd, varAll, configParam) + "$}"
+						case "valU": // print out result (with SI units). (ex: 3V or 23mV or 10km)
+							replace = "\\mbox{$" + valueInSI(valCmd, varAll, configParam) + "$}"
+						case "valLtx":
+							replace = "\\mbox{$" + varAll[valCmd].latex + "$}"
+						default:
+							// should never be here
+							logOut = "can not be here 06"
+						}
+					} else {
+						replace = "\\mbox{$" + valCmd + " \\text{ NOT DEFINED}$}"
+					}
+				default:
+					// if here, then \val**something else** found so an error message
+					logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND\n"
+					inString = logOut
+					return inString, logOut
 				}
-			case "val=": // print out var = result (with SI units).  (ex: V_1 = 3V or v_{tx} = 23mV or D = 10km)
-				_, ok = varAll[valCmd]
-				if ok {
-					replace = "\\mbox{$" + varAll[valCmd].latex + " = " + valueInSI(valCmd, varAll, configParam) + "$}"
-				} else {
-					replace = "\\mbox{$" + valCmd + " \\text{ NOT DEFINED}$}"
-				}
-			case "valU": // print out result (with SI units). (ex: 3V or 23mV or 10km)
-				_, ok = varAll[valCmd]
-				if ok {
-					replace = "\\mbox{$" + valueInSI(valCmd, varAll, configParam) + "$}"
-				} else {
-					replace = "\\mbox{$" + valCmd + " \\text{ NOT DEFINED}$}"
-				}
-			default:
-				// if here, then \val**something else** found so an error message
-				logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND\n"
-				inString = logOut
-				return inString, logOut
 			}
 		}
 		if !ltSpice { // also run these commands below if ltSpice is false
