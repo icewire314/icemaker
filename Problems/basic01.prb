@@ -1,25 +1,17 @@
-paramRandom = \val{paramRandom}
-paramSigDigits = \val{paramSigDigits}
-paramVariation = \val{paramVariation}
-paramFormat = \val{paramFormat}
+paramRandom: \val{paramRandom}
+paramSigDigits: \val{paramSigDigits}
+paramKFactor: \val{paramKFactor}
+paramFormat: \val{paramFormat}
 
 
-\runParam{x = [2.3e2 , 3.1e4,4e0,5]}
-\runParam{y = [6, 7, 8, 9] }
-\runParam{k = [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]}
+\runParam{x = [2, 3,4,5]}
+\runParam{y = [6  7, 8ze4b 9] }
+\runParam{k = [8, 9, 10, 11]}
 \question Given \val={x}, \val={y}, and \val={k} find $z = x^2+y-k$
 \textbf{Solution}
-\run={z=x^2+y-k; j=y}\\ 
+\hlite{\run={z=x^2+y-k; j=y}}\\ 
 \hlite{\val={z}} 
 
-\val{2000*j}
+\val{2*j}
 
-\run{z=1.24567845783e-8}
-
-\run()={z=1.24567845783e-8}
-
-\run()={kk = x/y}
-
-\val{z}
-
-
+\run()={newVar = x/y}

@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo) {
+func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo) string {
 	var inLines []string
-	var logOut, comment string
+	var logOut, comment, errorHeader, spiceFile, spiceFilename string
 	var texOut string
 	var linesToRemove []int
 	var reDeletethis = regexp.MustCompile(`(?m)\*\*deletethis\*\*`)
@@ -45,11 +45,11 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 		inLines[i], comment = deCommentLatex(inLines[i])
 		logOut = syntaxWarning(inLines[i])
 		if logOut != "" {
-			logOut = logOutWrite(logOut, i, outFile)
+			errorHeader, logOut = errorWrite(logOut, errorHeader, ".tex", i)
 		}
 		inLines[i], logOut = valRunReplace(inLines[i], varAll, configParam, false)
 		if logOut != "" {
-			logOut = logOutWrite(logOut, i, outFile)
+			errorHeader, logOut = errorWrite(logOut, errorHeader, ".tex", i)
 		}
 		inLines[i] = fixParll(inLines[i])
 		inLines[i] = inLines[i] + comment // add back comment that was removed above
@@ -60,9 +60,11 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 				linesToRemove = append(linesToRemove, i) // do it later so that line numbers still correct if an error is reported after a line removal
 			}
 		}
-		logOut = checkLTSpice(inLines[i], inFile, outFile, sigDigits, varAll, configParam)
+		spiceFile, spiceFilename, logOut = checkLTSpice(inLines[i], inFile, outFile, sigDigits, varAll, configParam)
 		if logOut != "" {
-			logOut = logOutWrite(logOut, i, outFile)
+			errorHeader, logOut = errorWrite(logOut, errorHeader, ".tex", i)
+		} else {
+			fileWriteString(spiceFile, filepath.Join(outFile.path, spiceFilename+"_update.asc"))
 		}
 	}
 	// remove lines that are slated for removal
@@ -71,9 +73,8 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 		inLines = remove(inLines, linesToRemove[i]-k) // need to subtract k as that those number of lines have already been removed
 		k++
 	}
-	texOut = strings.Join(inLines, "\n")
-	fileAppendString(texOut, outFile.full)
-	return
+	texOut = errorHeader + strings.Join(inLines, "\n")
+	return texOut
 }
 
 func logOutWrite(logOut string, lineNum int, outFile fileInfo) string {
@@ -87,14 +88,20 @@ func logOutWrite(logOut string, lineNum int, outFile fileInfo) string {
 	return logOut
 }
 
+func errorWrite(logOut, errorHeader, outFileExt string, lineNum int) (string, string) {
+	if lineNum != -1 { // dont include line number if lineNum = -1
+		logOut = logOut + " - Line number: " + strconv.Itoa(lineNum+1)
+	}
+	fmt.Println(logOut)
+	logOut = logComment(logOut, outFileExt)
+	errorHeader = errorHeader + logOut + "\n"
+	logOut = ""
+	return errorHeader, logOut
+}
+
 func valRunReplace(inString string, varAll map[string]varSingle, configParam map[string]string, ltSpice bool) (string, string) {
 	// ltSpice is a bool that if true implies we are replacing things in a .asc file (instead of a .prb file)
-	var result []string
-	var head, tail, replace, logOut, newLog, key, tmp string
-	var valCmd, valCmdType, runCmd, runCmdType string
-	var assignVar string
-	var answer float64
-	var ok bool
+	var head, tail, replace, logOut, newLog string
 	var reFirstvalRunCmd = regexp.MustCompile(`(?mU)^(?P<res1>.*)\\(?P<res2>run.*|val.*)(?P<res3>{.*)$`)
 	var reFirstvalCmd = regexp.MustCompile(`(?mU)^(?P<res1>.*)\\(?P<res2>val.*)(?P<res3>{.*)$`)
 	var reFirstRunCmd = regexp.MustCompile(`(?mU)^(?P<res1>.*)\\(?P<res2>run.*)(?P<res3>{.*)$`)
@@ -106,104 +113,16 @@ func valRunReplace(inString string, varAll map[string]varSingle, configParam map
 	}
 	for reFirstvalRunCmd.MatchString(inString) { // chec for val or run command
 		if reFirstvalCmd.MatchString(inString) { // check for a val command
-			result = reFirstvalCmd.FindStringSubmatch(inString) // found a val command
-			head = result[1]
-			valCmdType = result[2]
-			valCmd, tail = matchBrackets(result[3], "{")
-			replace = "" // so the old replace is not used
-
-			// first check if configParam going to be printed out and if so, then print it
-			for key = range configParam {
-				if valCmd == key {
-					replace = configParam[key] // printing out a configParam
-				}
-			}
-			if replace == "" { // no configParam found then do below
-				switch valCmdType {
-				case "val", "valNDec", "valNEng", "valNsci":
-					_, _, answer, newLog = runCode(valCmd, varAll)
-					if newLog == "" {
-						if valCmdType == "val" {
-							replace = float2Str(answer, configParam)
-						} else {
-							tmp = configParam["paramFormat"]
-							switch valCmdType {
-							case "valNDec":
-								configParam["paramFormat"] = "decimal"
-							case "valNEng":
-								configParam["paramFormat"] = "eng"
-							case "valNSci":
-								configParam["paramFormat"] = "sci"
-							default: // never here
-							}
-							replace = float2Str(answer, configParam)
-							configParam["paramFormat"] = tmp
-						}
-					} else {
-						replace = newLog
-					}
-				case "val=", "valU", "valLtx":
-					_, ok = varAll[valCmd] // check that valCmd is a variable in the varAll map
-					if ok {
-						switch valCmdType {
-						case "val=": // print out var = result (with SI units).  (ex: V_1 = 3V or v_{tx} = 23mV or D = 10km)
-							replace = "\\mbox{$" + varAll[valCmd].latex + " = " + valueInSI(valCmd, varAll, configParam) + "$}"
-						case "valU": // print out result (with SI units). (ex: 3V or 23mV or 10km)
-							replace = "\\mbox{$" + valueInSI(valCmd, varAll, configParam) + "$}"
-						case "valLtx":
-							replace = "\\mbox{$" + varAll[valCmd].latex + "$}"
-						default:
-							// should never be here
-							logOut = "can not be here 06"
-						}
-					} else {
-						replace = "\\mbox{$" + valCmd + " \\text{ NOT DEFINED}$}"
-					}
-				default:
-					// if here, then \val**something else** found so an error message
-					logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND\n"
-					inString = logOut
-					return inString, logOut
-				}
+			head, tail, replace, logOut = valReplace(inString, varAll, configParam) // found a val command
+			if logOut != "" {
+				inString = logOut
+				return inString, logOut
 			}
 		}
 		if !ltSpice { // also run these commands below if ltSpice is false
-			if reFirstRunCmd.MatchString(inString) {
-				result = reFirstRunCmd.FindStringSubmatch(inString)
-				head = result[1]
-				runCmdType = result[2]
-				runCmd, tail = matchBrackets(result[3], "{")
-				replace = "" // so the old replace is not used
-				switch runCmdType {
-				case "runParam": // Used for setting parameters and config parameters
-					replace = "**deletethis**"
-					newLog = runParamFunc(runCmd, varAll, configParam)
-				case "runSilent": // run statement but do not print anything
-					replace = "**deletethis**"
-					_, _, _, newLog = runCode(runCmd, varAll)
-				case "run": // run statement and print statement (ex: v_2 = 3*V_t)
-					assignVar, runCmd, answer, newLog = runCode(runCmd, varAll)
-					if assignVar == "" {
-						replace = float2Str(answer, configParam) // not an assignment statment so just return  answer
-					} else {
-						replace = "\\mbox{$" + latexStatement(runCmd, varAll) + "$}"
-					}
-				case "run=": // run statement and print out statement = result (with units) (ex: v_2 = 3*V_t = 75mV)
-					assignVar, runCmd, answer, newLog = runCode(runCmd, varAll)
-					if assignVar == "" {
-						replace = "error: not an assignment statement"
-					} else {
-						replace = "\\mbox{$" + latexStatement(runCmd, varAll) + " = " + valueInSI(assignVar, varAll, configParam) + "$}"
-					}
-				case "run()": // same as run but include = bracket values in statement (ex" v_2 = 3*V_t = 3*(25e-3))
-					_, runCmd, _, newLog = runCode(runCmd, varAll)
-					replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, varAll, configParam) + "$}"
-				case "run()=": // same as run() but include result (ex: v_2 = 3*V_t = 3*(25e-3)=75mV)
-					assignVar, runCmd, _, newLog = runCode(runCmd, varAll)
-					replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, varAll, configParam) + " = " + valueInSI(assignVar, varAll, configParam) + "$}"
-				default:
-					// if here, then error as \run**something else** is here
-					logOut = "\\" + runCmdType + " *** NOT A VALID COMMAND\n"
+			if reFirstRunCmd.MatchString(inString) { // check for a run command
+				head, tail, replace, newLog, logOut = runReplace(inString, varAll, configParam)
+				if logOut != "" {
 					inString = logOut
 					return inString, logOut
 				}
@@ -213,6 +132,50 @@ func valRunReplace(inString string, varAll map[string]varSingle, configParam map
 		logOut = logOut + newLog
 	}
 	return inString, logOut
+}
+
+func runReplace(inString string, varAll map[string]varSingle, configParam map[string]string) (string, string, string, string, string) {
+	var head, tail, logOut, runCmdType, runCmd, replace, newLog, assignVar string
+	var answer float64
+	var result []string
+	var reFirstRunCmd = regexp.MustCompile(`(?mU)^(?P<res1>.*)\\(?P<res2>run.*)(?P<res3>{.*)$`)
+	result = reFirstRunCmd.FindStringSubmatch(inString)
+	head = result[1]
+	runCmdType = result[2]
+	runCmd, tail = matchBrackets(result[3], "{")
+	replace = "" // so the old replace is not used
+	switch runCmdType {
+	case "runParam": // Used for setting parameters and config parameters
+		replace = "**deletethis**"
+		newLog = runParamFunc(runCmd, varAll, configParam)
+	case "runSilent": // run statement but do not print anything
+		replace = "**deletethis**"
+		_, _, _, newLog = runCode(runCmd, varAll)
+	case "run": // run statement and print statement (ex: v_2 = 3*V_t)
+		assignVar, runCmd, answer, newLog = runCode(runCmd, varAll)
+		if assignVar == "" {
+			replace = float2Str(answer, configParam) // not an assignment statment so just return  answer
+		} else {
+			replace = "\\mbox{$" + latexStatement(runCmd, varAll) + "$}"
+		}
+	case "run=": // run statement and print out statement = result (with units) (ex: v_2 = 3*V_t = 75mV)
+		assignVar, runCmd, answer, newLog = runCode(runCmd, varAll)
+		if assignVar == "" {
+			replace = "error: not an assignment statement"
+		} else {
+			replace = "\\mbox{$" + latexStatement(runCmd, varAll) + " = " + valueInSI(assignVar, varAll, configParam) + "$}"
+		}
+	case "run()": // same as run but include = bracket values in statement (ex" v_2 = 3*V_t = 3*(25e-3))
+		_, runCmd, _, newLog = runCode(runCmd, varAll)
+		replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, varAll, configParam) + "$}"
+	case "run()=": // same as run() but include result (ex: v_2 = 3*V_t = 3*(25e-3)=75mV)
+		assignVar, runCmd, _, newLog = runCode(runCmd, varAll)
+		replace = "\\mbox{$" + latexStatement(runCmd, varAll) + bracketed(runCmd, varAll, configParam) + " = " + valueInSI(assignVar, varAll, configParam) + "$}"
+	default:
+		// if here, then error as \run**something else** is here
+		logOut = "\\" + runCmdType + " *** NOT A VALID COMMAND\n"
+	}
+	return head, tail, replace, newLog, logOut
 }
 
 func valReplace(inString string, varAll map[string]varSingle, configParam map[string]string) (string, string, string, string) {
@@ -277,14 +240,12 @@ func valReplace(inString string, varAll map[string]varSingle, configParam map[st
 		default:
 			// if here, then \val**something else** found so an error message
 			logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND\n"
-			inString = logOut
-			return head, tail, inString, logOut
 		}
 	}
-	return head, tail, inString, logOut
+	return head, tail, replace, logOut
 }
 
-func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits string, varAll map[string]varSingle, configParam map[string]string) string {
+func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits string, varAll map[string]varSingle, configParam map[string]string) (string, string, string) {
 	var spiceFilename, spiceFile, logOut string
 	var inLines []string
 	var reLTSpice = regexp.MustCompile(`(?mU)\\incProbLTspice.*{\s*(?P<res1>\S*)\s*}`)
@@ -292,7 +253,7 @@ func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits string, v
 		spiceFilename = reLTSpice.FindStringSubmatch(inString)[1]
 		spiceFile, logOut = fileReadString(filepath.Join(inFile.path, spiceFilename+".asc"))
 		if logOut != "" {
-			return logOut
+			return "", "", logOut
 		}
 		spiceFile, _ = convertIfUtf16(spiceFile)
 		inLines = strings.Split(spiceFile, "\n")
@@ -300,13 +261,13 @@ func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits string, v
 			inLines[i], logOut = valRunReplace(inLines[i], varAll, configParam, true)
 			if logOut != "" {
 				logOut = logOut + " - error in " + spiceFilename + ".asc"
-				return logOut
+				return "", "", logOut
 			}
 		}
 		spiceFile = strings.Join(inLines, "\n")
 		fileWriteString(spiceFile, filepath.Join(outFile.path, spiceFilename+"_update.asc"))
 	}
-	return logOut
+	return spiceFile, spiceFilename, logOut
 }
 
 func syntaxWarning(statement string) (logOut string) {

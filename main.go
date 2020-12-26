@@ -81,8 +81,8 @@ type fileInfo struct {
 // also software version is output at beginning of output file
 
 func main() {
-	var inFileStr, logOut, header, symPath, fontType string
-	var sigDigits, txtMode, dotsMode, randomStr string
+	var inFileStr, logOut, header, symPath, fontType, outStr string
+	var sigDigits, txtMode, dotsMode, randomStr, errorHeader string
 	var inFile, outFile fileInfo
 	var version string
 	var ltSpiceInput string
@@ -95,25 +95,27 @@ func main() {
 	inFile, outFile, symPath, randomStr, sigDigits, txtMode, dotsMode, fontType, logOut = commandFlags(version) // outFile depends on inFile file extension
 	fileWriteString("", outFile.full)
 	if logOut != "" {
-		logOut = logOutWrite(logOut, -1, outFile)
+		errorHeader, logOut = errorWrite(logOut, "", outFile.ext, -1)
+		fileAppendString(errorHeader, outFile.full)
 		os.Exit(1)
 	}
 	header = "Created with icemaker: version = " + version
 	switch outFile.ext {
 	case ".tex":
-		_ = logOutWrite(header, -1, outFile)
+		errorHeader, _ = errorWrite(header, "", ".tex", -1)
 		inFileStr, logOut = fileReadString(inFile.full)
 		if logOut != "" {
-			logOut = logOutWrite(logOut, -1, outFile)
+			errorHeader, logOut = errorWrite(logOut, errorHeader, ".tex", -1)
 		}
-		makeTex(inFileStr, sigDigits, randomStr, inFile, outFile)
+		outStr = errorHeader + makeTex(inFileStr, sigDigits, randomStr, inFile, outFile)
+		fileAppendString(outStr, outFile.full)
 	case ".svg":
 		header0 := `<?xml version="1.0" encoding="UTF-8" standalone="no"?>`
-		fileAppendString(header0, outFile.full)
-		_ = logOutWrite(header, -1, outFile)
+		errorHeader, _ = errorWrite(header0, "", ".svg", -1)
+		errorHeader, _ = errorWrite(header, errorHeader, ".svg", -1)
 		ltSpiceInput, logOut = getInputFiles(inFile.full)
 		if logOut != "" {
-			logOut = logOutWrite(logOut, -1, outFile)
+			errorHeader, logOut = errorWrite(logOut, errorHeader, ".svg", -1)
 		}
 		switch txtMode {
 		case "symbol":
