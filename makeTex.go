@@ -215,6 +215,75 @@ func valRunReplace(inString string, varAll map[string]varSingle, configParam map
 	return inString, logOut
 }
 
+func valReplace(inString string, varAll map[string]varSingle, configParam map[string]string) (string, string, string, string) {
+	var head, valCmdType, tail, replace, valCmd, key, logOut, tmp, newLog string
+	var ok bool
+	var answer float64
+	var result []string
+	var reFirstvalCmd = regexp.MustCompile(`(?mU)^(?P<res1>.*)\\(?P<res2>val.*)(?P<res3>{.*)$`)
+	result = reFirstvalCmd.FindStringSubmatch(inString) // found a val command
+	head = result[1]
+	valCmdType = result[2]
+	valCmd, tail = matchBrackets(result[3], "{")
+	replace = "" // so the old replace is not used
+
+	// first check if configParam going to be printed out and if so, then print it
+	for key = range configParam {
+		if valCmd == key {
+			replace = configParam[key] // printing out a configParam
+		}
+	}
+	if replace == "" { // no configParam found then do below
+		switch valCmdType {
+		case "val", "valNDec", "valNEng", "valNsci":
+			_, _, answer, newLog = runCode(valCmd, varAll)
+			if newLog == "" {
+				if valCmdType == "val" {
+					replace = float2Str(answer, configParam)
+				} else {
+					tmp = configParam["paramFormat"]
+					switch valCmdType {
+					case "valNDec":
+						configParam["paramFormat"] = "decimal"
+					case "valNEng":
+						configParam["paramFormat"] = "eng"
+					case "valNSci":
+						configParam["paramFormat"] = "sci"
+					default: // never here
+					}
+					replace = float2Str(answer, configParam)
+					configParam["paramFormat"] = tmp
+				}
+			} else {
+				replace = newLog
+			}
+		case "val=", "valU", "valLtx":
+			_, ok = varAll[valCmd] // check that valCmd is a variable in the varAll map
+			if ok {
+				switch valCmdType {
+				case "val=": // print out var = result (with SI units).  (ex: V_1 = 3V or v_{tx} = 23mV or D = 10km)
+					replace = "\\mbox{$" + varAll[valCmd].latex + " = " + valueInSI(valCmd, varAll, configParam) + "$}"
+				case "valU": // print out result (with SI units). (ex: 3V or 23mV or 10km)
+					replace = "\\mbox{$" + valueInSI(valCmd, varAll, configParam) + "$}"
+				case "valLtx":
+					replace = "\\mbox{$" + varAll[valCmd].latex + "$}"
+				default:
+					// should never be here
+					logOut = "can not be here 06"
+				}
+			} else {
+				replace = "\\mbox{$" + valCmd + " \\text{ NOT DEFINED}$}"
+			}
+		default:
+			// if here, then \val**something else** found so an error message
+			logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND\n"
+			inString = logOut
+			return head, tail, inString, logOut
+		}
+	}
+	return head, tail, inString, logOut
+}
+
 func checkLTSpice(inString string, inFile, outFile fileInfo, sigDigits string, varAll map[string]varSingle, configParam map[string]string) string {
 	var spiceFilename, spiceFile, logOut string
 	var inLines []string
@@ -300,6 +369,7 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 	var reUnits = regexp.MustCompile(`(?m)\\paramUnits(?P<res1>{.*)$`)
 	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
 	var reStep = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)\s*;\s*(?P<res2>\S+)\s*;\s*(?P<res3>\S+)`)
+	var reKFactor = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)\s*:\s*(?P<res2>\S+)\s*$`)
 	if reEqual.MatchString(statement) {
 		result = reEqual.FindStringSubmatch(statement)
 		assignVar = result[1]
@@ -323,7 +393,13 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 					//
 					configParam["paramFormat"] = rightSide
 				case "paramKFactor":
-					//
+					if reKFactor.MatchString(rightSide) {
+						configParam["paramKFactor"] = rightSide
+
+					} else {
+						logOut = "paramKFactor syntax incorrect"
+						return logOut
+					}
 					configParam["paramKFactor"] = rightSide
 				default:
 					logOut = "should never be here 05"
@@ -374,7 +450,7 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 			for x := min; x <= max; x = x + stepSize {
 				values = append(values, x)
 			}
-		case reArray.MatchString("not here"): // put variation match here
+		case reArray.MatchString("not here"): // put KFactor match here
 		default:
 			logOut = "not a valid \runParam statement"
 			return logOut

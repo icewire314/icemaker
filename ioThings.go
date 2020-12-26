@@ -104,9 +104,11 @@ func checkRandom(randomStr, logOut string) (int, string) {
 	default: //check that string is a positive integer
 		random, err = strconv.Atoi(randomStr)
 		if err != nil {
+			random = 0
 			logOut = logOut + "random should be either \"false\", \"true\", or a positive integer\n"
 		} else {
 			if random < 1 {
+				random = 0
 				logOut = logOut + "random should be a positive integer\n"
 			}
 		}
