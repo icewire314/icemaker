@@ -101,11 +101,17 @@ func checkRandom(randomStr, logOut string) (int, string) {
 		random = 0
 	case "true", "-1":
 		random = -1
+	case "min":
+		random = -2
+	case "max":
+		random = -3
+	case "minMax":
+		random = -4
 	default: //check that string is a positive integer
 		random, err = strconv.Atoi(randomStr)
 		if err != nil {
 			random = 0
-			logOut = logOut + "random should be either \"false\", \"true\", or a positive integer\n"
+			logOut = logOut + "random should be either \"false\", \"true\", \"min\", \"max\", \"minMax\", or a positive integer"
 		} else {
 			if random < 1 {
 				random = 0

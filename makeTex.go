@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -20,11 +22,12 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 	// using map here as I want to be able to iterate over key names as well
 	// as looking at value for each key
 	// these are configuration parameters
-	var configParam = map[string]string{
-		"paramRandom":    randomStr, // can be -1, 0, or any positive integer
+	var configParam = map[string]string{ // defaults shown below
+		"paramRandom":    randomStr, // can be false, true, any positive integer, min, max, minMax
 		"paramSigDigits": sigDigits, // number of significant digits to print
 		"paramKFactor":   "1.3:5",   // variation from x/k to kx : number of choices
 		"paramFormat":    "eng",     // can be eng, sci or decimal
+		"paramVerbose":   "false",   // can be true or false
 	}
 
 	varAll := make(map[string]varSingle) // IMPORTANT to use this type of map assignment - tried another and it worked for a while
@@ -35,7 +38,7 @@ func makeTex(problemInput, sigDigits, randomStr string, inFile, outFile fileInfo
 	// WITH VARIABLE MAP, keywords variation/random/sigDigits are used and defaults set below
 	// stored in MAP so user can change them using \runParam{random=true}... during run of program
 
-	// var key string
+	// var key string  ... test code
 	// for key = range configParam {
 	// 	fmt.Println(configParam[key])
 	// }
@@ -146,8 +149,10 @@ func runReplace(inString string, varAll map[string]varSingle, configParam map[st
 	replace = "" // so the old replace is not used
 	switch runCmdType {
 	case "runParam": // Used for setting parameters and config parameters
-		replace = "**deletethis**"
-		newLog = runParamFunc(runCmd, varAll, configParam)
+		replace, newLog = runParamFunc(runCmd, varAll, configParam)
+		if replace == "" {
+			replace = "**deletethis**"
+		}
 	case "runSilent": // run statement but do not print anything
 		replace = "**deletethis**"
 		_, _, _, newLog = runCode(runCmd, varAll)
@@ -316,10 +321,10 @@ func bracketCheck(inString string, leftBrac string) (logOut string) {
 	return
 }
 
-func runParamFunc(statement string, varAll map[string]varSingle, configParam map[string]string) string {
+func runParamFunc(statement string, varAll map[string]varSingle, configParam map[string]string) (string, string) {
 	var assignVar, rightSide, key, logOut string
-	var units, latex, prefix string
-	var value float64
+	var units, latex, prefix, outVerbose string
+	var value, factor, nominal float64
 	var values []float64
 	var num, random int
 	var result []string
@@ -329,15 +334,15 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 	var reOptions = regexp.MustCompile(`(?m)#(?P<res1>.*)$`)
 	var reUnits = regexp.MustCompile(`(?m)\\paramUnits(?P<res1>{.*)$`)
 	var reLatex = regexp.MustCompile(`(?m)\\paramLatex(?P<res1>{.*)$`)
-	var reStep = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)\s*;\s*(?P<res2>\S+)\s*;\s*(?P<res3>\S+)`)
-	var reKFactor = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)\s*:\s*(?P<res2>\S+)\s*$`)
+	var reStep = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)\s*;\s*(?P<res2>\S+)\s*;\s*(?P<res3>\S+)[#|\s]*`)
+	var reKFactor = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)[#|\s]*`)
 	if reEqual.MatchString(statement) {
 		result = reEqual.FindStringSubmatch(statement)
 		assignVar = result[1]
-		rightSide = strings.TrimSpace(result[2])
+		rightSide = strings.TrimSpace(result[2]) // trim whitespace from beginning and end
 		assignVar, logOut = checkReserved(assignVar, logOut)
 		if logOut != "" {
-			return logOut
+			return "", logOut
 		}
 		for key = range configParam {
 			if assignVar == key { // it is a configParam runParam statement
@@ -351,21 +356,31 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 					// put check for paramSigDigits here
 					configParam["paramSigDigits"] = rightSide
 				case "paramFormat":
-					//
-					configParam["paramFormat"] = rightSide
+					switch rightSide {
+					case "eng", "sci", "decimal":
+						configParam["paramFormat"] = rightSide
+					default:
+						logOut = "paramFormat can be either eng, sci or decimal"
+						return "", logOut
+					}
 				case "paramKFactor":
-					if reKFactor.MatchString(rightSide) {
-						configParam["paramKFactor"] = rightSide
-
-					} else {
-						logOut = "paramKFactor syntax incorrect"
-						return logOut
+					factor, num, logOut = convertKFactor(rightSide)
+					if logOut != "" {
+						return "", logOut
 					}
 					configParam["paramKFactor"] = rightSide
+				case "paramVerbose":
+					switch rightSide {
+					case "true", "false":
+						configParam["paramVerbose"] = rightSide
+					default:
+						logOut = "paramVerbose can be either true or false"
+						return "", logOut
+					}
 				default:
 					logOut = "should never be here 05"
 				}
-				return logOut
+				return "", logOut
 			}
 		}
 		tmp2, ok := varAll[assignVar]
@@ -380,44 +395,68 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 			result = reArray.FindStringSubmatch(rightSide)
 			values, logOut = findArrayValues(result[1])
 			if logOut != "" {
-				return logOut
+				return "", logOut
 			}
 		case reStep.MatchString(rightSide): // it is a step runParam statement
 			result = reStep.FindStringSubmatch(rightSide)
 			min, logOut = str2Float64(result[1])
 			if logOut != "" {
-				return logOut
+				return "", logOut
 			}
 			max, logOut = str2Float64(result[2])
 			if logOut != "" {
-				return logOut
+				return "", logOut
 			}
 			stepSize, logOut = str2Float64(result[3])
 			if logOut != "" {
-				return logOut
+				return "", logOut
 			}
 			if stepSize < 0 {
 				logOut = "step size must be greater than zero"
-				return logOut
+				return "", logOut
 			}
 			if max < min {
 				logOut = "max value must be larger than min value"
-				return logOut
+				return "", logOut
 			}
-			if (max - min/stepSize) > 200 {
-				logOut = "step size is too small and results in more than 200 values"
-				return logOut
+			if (max - min/stepSize) > 100 {
+				logOut = "step size is too small and results in more than 100 values"
+				return "", logOut
 			}
 			for x := min; x <= max; x = x + stepSize {
 				values = append(values, x)
 			}
-		case reArray.MatchString("not here"): // put KFactor match here
+		case reKFactor.MatchString(rightSide): // it is a kFactor statement
+			result = reKFactor.FindStringSubmatch(rightSide)
+			nominal, logOut = str2Float64(result[1])
+			if logOut != "" {
+				return "", logOut
+			}
+			values = append(values, nominal) // the nominal value is value[0] so it is default
+			factor, num, logOut = convertKFactor(configParam["paramKFactor"])
+			if logOut != "" {
+				return "", logOut
+			}
+			// Now want (1/k)^(2i/(num-1)) and (k)^(2i/(num-1)) times nominal for i=1,(num-1)/2
+			// for all the other values
+			for i := (num - 1) / 2; i >= 1; i = i - 1 {
+				accuracy := "2"
+				if math.Pow(factor, (2/(float64(num)-1))) < 1.09 { // less than 10 percent diff between values
+					accuracy = "3" // increase accuracy since small variation between values
+				}
+				tmpNum := nominal * math.Pow(factor, (2*float64(i)/(float64(num)-1)))
+				tmpNum, _ = strconv.ParseFloat(fmt.Sprintf("%."+accuracy+"g", tmpNum), 64)
+				values = append(values, tmpNum)
+				tmpNum = nominal * math.Pow(1/factor, (2*float64(i)/(float64(num)-1)))
+				tmpNum, _ = strconv.ParseFloat(fmt.Sprintf("%."+accuracy+"g", tmpNum), 64)
+				values = append(values, tmpNum)
+			}
 		default:
-			logOut = "not a valid \runParam statement"
-			return logOut
+			logOut = "not a valid \\runParam statement"
+			return "", logOut
 		}
 		if reOptions.MatchString(rightSide) {
-			options := reOptions.FindStringSubmatch(rightSide)[1] // the stuff after #
+			options := reOptions.FindStringSubmatch(rightSide)[1] // the options stuff after #
 			if reUnits.MatchString(options) {
 				tmp := reUnits.FindStringSubmatch(options)[1] // just the stuff {.*$
 				preUnits, _ := matchBrackets(tmp, "{")        // a string that has prefix and units together
@@ -430,12 +469,37 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 				tmp2.latex = latex
 			}
 		}
+		if configParam["paramVerbose"] == "true" {
+			outVerbose = "% " + assignVar + " = ["
+			for i := range values {
+				outVerbose = outVerbose + fmt.Sprintf("%g", values[i]*prefix2float(prefix))
+				if i < len(values)-1 {
+					outVerbose = outVerbose + ","
+				}
+			}
+			outVerbose = outVerbose + "]"
+		}
 		random, logOut = checkRandom(configParam["paramRandom"], logOut)
 		switch random {
 		case 0: // if random == 0, then num = 0 so first element is chosen
 			num = 0
 		case -1: // if random == -1, then  num is a random in between 0 and values-1 (based on machine time so pretty much really random)
 			num = rand.Intn(len(values))
+		case -2, -3, -4: // min, max, minMax case
+			sort.Float64s(values) // sort values - lowest at 0 highest at len(values)-1
+			switch random {
+			case -2:
+				num = 0
+			case -3:
+				num = len(values) - 1
+			case -4: // choose either min or max value
+				if rand.Intn(2) == 0 {
+					num = 0
+				} else {
+					num = len(values) - 1
+				}
+			default: // should never be here
+			}
 		default: // if here, random is a seed so use it to get the next random
 			random = psuedoRand(random) // update random based on the last random value (treat last one as seed)
 			num = randInt(len(values), random)
@@ -445,7 +509,43 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 		tmp2.value = value
 		varAll[assignVar] = tmp2
 	}
-	return logOut
+	return outVerbose, logOut
+}
+
+func convertKFactor(inString string) (float64, int, string) {
+	var factor float64
+	var num int
+	var logOut string
+	var result []string
+	var err error
+	var reKFactor = regexp.MustCompile(`(?m)^\s*(?P<res1>\S+)\s*:\s*(?P<res2>\S+)\s*$`)
+	if reKFactor.MatchString(inString) {
+		result = reKFactor.FindStringSubmatch(inString)
+		factor, logOut = str2Float64(result[1])
+		if logOut != "" {
+			return factor, num, logOut
+		}
+		if factor <= 1 {
+			logOut = "kFactor must be greater than 1"
+			return factor, num, logOut
+		}
+		num, err = strconv.Atoi(result[2])
+		if err != nil {
+			logOut = "incorrect syntax for \\runKFactor: should be kFactor:number"
+			return factor, num, logOut
+		}
+		if num < 1 {
+			logOut = "kFactor:number ... number should be > 0"
+			return factor, num, logOut
+		}
+		if num%2 == 0 { // if num is even make it odd by adding one so that values are equally
+			// spaced above and below nominal value
+			num = num + 1
+		}
+	} else {
+		logOut = "incorrect syntax for \\runKFactor: should be kFactor:number"
+	}
+	return factor, num, logOut
 }
 
 // findArrayValues returns a slice of float64 from a comma or space delimited string of numbers
