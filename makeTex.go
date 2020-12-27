@@ -203,7 +203,7 @@ func valReplace(inString string, varAll map[string]varSingle, configParam map[st
 	}
 	if replace == "" { // no configParam found then do below
 		switch valCmdType {
-		case "val", "valNDec", "valNEng", "valNsci":
+		case "val", "valNDec", "valNEng", "valNSci":
 			_, _, answer, newLog = runCode(valCmd, varAll)
 			if newLog == "" {
 				if valCmdType == "val" {
@@ -244,7 +244,7 @@ func valReplace(inString string, varAll map[string]varSingle, configParam map[st
 			}
 		default:
 			// if here, then \val**something else** found so an error message
-			logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND\n"
+			logOut = "\\" + valCmdType + " *** NOT A VALID COMMAND"
 		}
 	}
 	return head, tail, replace, logOut
@@ -348,7 +348,7 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 			if assignVar == key { // it is a configParam runParam statement
 				switch assignVar {
 				case "paramRandom":
-					random, logOut = checkRandom(rightSide, logOut)
+					random, logOut = checkRandom(rightSide)
 					if logOut == "" {
 						configParam["paramRandom"] = rightSide
 					}
@@ -419,7 +419,7 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 				logOut = "max value must be larger than min value"
 				return "", logOut
 			}
-			if (max - min/stepSize) > 100 {
+			if ((max - min) / stepSize) > 100 {
 				logOut = "step size is too small and results in more than 100 values"
 				return "", logOut
 			}
@@ -479,7 +479,7 @@ func runParamFunc(statement string, varAll map[string]varSingle, configParam map
 			}
 			outVerbose = outVerbose + "]"
 		}
-		random, logOut = checkRandom(configParam["paramRandom"], logOut)
+		random, logOut = checkRandom(configParam["paramRandom"])
 		switch random {
 		case 0: // if random == 0, then num = 0 so first element is chosen
 			num = 0

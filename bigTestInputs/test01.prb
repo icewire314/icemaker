@@ -1,17 +1,50 @@
+\runParam{paramVerbose = true}
+\runParam{paramKFactor = 2:7}
+\runParam{paramRandom = false}
 paramRandom: \val{paramRandom}
 paramSigDigits: \val{paramSigDigits}
 paramKFactor: \val{paramKFactor}
 paramFormat: \val{paramFormat}
-
-
-\runParam{x = [2, 3,4,5]}
-\runParam{y = [6  7, 8 9] }
-\runParam{k = [8, 9, 10, 11]}
-\question Given \val={x}, \val={y}, and \val={k} find $z = x^2+y-k$
-\textbf{Solution}
+paramVerbose: \val{paramVerbose}
+\runParam{x = [13 2,7,25]}
+\runParam{y = 17;120;20 #\paramUnits{mV}\paramLatex{y^{tst}} }
+\runParam{k = 1.0}
+\runSilent{m_3=23e2#\paramUnits{\mu A}}
+\question Given \val={x}, \val={y}, and \val={k} find $z = x^2+y-k$\\
+\textbf{Solution}\\
 \hlite{\run{z=x^2+y-k; j=y}}\\ 
-\hlite{\val={z}} 
+\hlite{\val={z}}\\
+\val{2*j}\\
+\run()={newVar = x/y}\\
+\valLtx{y}\\
+\valNDec{y} ... \valNEng{y} ... \valNSci{y}\\
 
-\val{2*j}
+\runParam{paramRandom = min}
+paramRandom: \val{paramRandom}
+\runParam{x = [13 2,7,25]}
+\runParam{y = 17;120;20 #\paramUnits{mV}\paramLatex{y^{tst}} }
+\runParam{k = 1.0}
+\runSilent{m_3=23e2#\paramUnits{\mu A}}
+\question Given \val={x}, \val={y}, and \val={k} find $z = x^2+y-k$\\
+\textbf{Solution}\\
+\hlite{\run{z=x^2+y-k; j=y}}\\ 
+\hlite{\val={z}}\\
+\val{2*j}\\
+\run()={newVar = x/y}\\
+\valLtx{y}\\
+\valNDec{y} ... \valNEng{y} ... \valNSci{y}\\
 
-\run()={newVar = x/y}
+\runParam{paramRandom = max}
+paramRandom: \val{paramRandom}
+\runParam{x = [13 2,7,25]}
+\runParam{y = 17;120;20 #\paramUnits{mV}\paramLatex{y^{tst}} }
+\runParam{k = 1.0}
+\runSilent{m_3=23e2#\paramUnits{\mu A}}
+\question Given \val={x}, \val={y}, and \val={k} find $z = x^2+y-k$\\
+\textbf{Solution}\\
+\hlite{\run{z=x^2+y-k; j=y}}\\ 
+\hlite{\val={z}}\\
+\val{2*j}\\
+\run()={newVar = x/y}\\
+\valLtx{y}\\
+\valNDec{y} ... \valNEng{y} ... \valNSci{y}\\

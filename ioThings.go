@@ -64,7 +64,10 @@ func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, r
 		symPath = "no symPath given"
 	}
 	randomStr = *randomPtr
-	_, logOut = checkRandom(randomStr, logOut)
+	_, logOut = checkRandom(randomStr)
+	if logOut != "" {
+		return
+	}
 	sigDigits, logOut = checkSigDigits(*sigDigitsPtr, logOut)
 	// sigDigits = strIncrement(sigDigits, -1) // needed so that TOTAL significant digits is sigDigits
 	if outFile.ext == "" {
@@ -93,8 +96,9 @@ func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, r
 	return
 }
 
-func checkRandom(randomStr, logOut string) (int, string) {
+func checkRandom(randomStr string) (int, string) {
 	var random int
+	var logOut string
 	var err error
 	switch randomStr {
 	case "false", "0":
@@ -115,7 +119,7 @@ func checkRandom(randomStr, logOut string) (int, string) {
 		} else {
 			if random < 1 {
 				random = 0
-				logOut = logOut + "random should be a positive integer\n"
+				logOut = logOut + "random should be a positive integer"
 			}
 		}
 	}
