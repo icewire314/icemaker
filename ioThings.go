@@ -97,9 +97,9 @@ func checkRandom(randomStr, logOut string) (int, string) {
 	var random int
 	var err error
 	switch randomStr {
-	case "false":
+	case "false", "0":
 		random = 0
-	case "true":
+	case "true", "-1":
 		random = -1
 	default: //check that string is a positive integer
 		random, err = strconv.Atoi(randomStr)
