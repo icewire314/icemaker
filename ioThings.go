@@ -25,10 +25,10 @@ func commandFlags(version string) (inFile fileInfo, outFile fileInfo, symPath, r
 	symPathPtr := flag.String("symPath", "", "symPath - path for where to look for LTSpice symbols")
 	sigDigitsPtr := flag.String("sigDigits", "4", "number of significant digits for output\n")
 	// determines sig digits number for prob2tex
-	randomPtr := flag.String("random", "false", "If \"false\", first element in each parameter set is used\nIf \"true\", parameters are randomly chosen from parameter sets\nIf a positive integer, that integer is the seed for random generator\n")
+	randomPtr := flag.String("random", "false", "Choices are false, true, min, max, minMax, or positive integer")
 	// determines whether parameters are default or random chosen from a set
 
-	txtModePtr := flag.String("text", "noChange", "If \"noChange\", text is unchanged\nIf \"latex\", instantiation names will be put in latex equations\nIf \"subscript\", instantiation names will have subscripts\n   and _{x1} will put x1 as a subscript\nIf \"symbol\", an svg output will be created for the symbol input file\n")
+	txtModePtr := flag.String("text", "noChange", "Choices are noChange, latex, subscript, or symbol")
 	// text flag sets test output as well as changing to symbol svg generation
 	// - if left blank or not used, text is unchanged
 	// - if "latex", instantiation names will be put in latex equations (nothing else is changed)
