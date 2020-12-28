@@ -90,7 +90,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano()) // needed so a new seed occurs every time the program is run
 	//currentTime := time.Now()
 	//	todayDate = currentTime.Format("2006-01-02")
-	version = "0.8.0" + " (" + "2020-12-20" + ")"
+	version = "0.8.1" + " (" + "2020-12-28" + ")"
 
 	inFile, outFile, symPath, randomStr, sigDigits, txtMode, dotsMode, fontType, logOut = commandFlags(version) // outFile depends on inFile file extension
 	fileWriteString("", outFile.full)
